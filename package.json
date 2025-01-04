@@ -1,21 +1,27 @@
 {
-  "name": "quicknginx-tauri",
+  "name": "quicknginx",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
+  "main": "src/main.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
+    "start": "electron .",
+    "dev": "electron .",
+    "build": "electron-builder",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.quicknginx.app",
+    "productName": "QuickNginx",
+    "mac": {
+      "category": "public.app-category.developer-tools"
+    }
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.5.0",
-    "vue": "^3.3.0"
+    "electron-store": "^8.1.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.5.0",
-    "@vitejs/plugin-vue": "^4.2.3",
-    "vite": "^4.4.4"
+    "electron": "^25.8.4",
+    "electron-builder": "^24.6.4"
   }
 }
