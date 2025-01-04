@@ -1,27 +1,57 @@
 {
   "name": "quicknginx",
-  "private": true,
   "version": "1.0.0",
+  "description": "快速管理 Nginx 的图形界面工具",
   "main": "src/main.js",
+  "author": "quickNginx Team",
   "scripts": {
     "start": "electron .",
-    "dev": "electron .",
-    "build": "electron-builder",
+    "dev": "electron . --debug",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist:arm64": "electron-builder --mac --arm64",
+    "dist:x64": "electron-builder --mac --x64",
+    "dist": "npm run dist:arm64 && npm run dist:x64"
   },
   "build": {
     "appId": "com.quicknginx.app",
-    "productName": "QuickNginx",
+    "productName": "quickNginx",
     "mac": {
-      "category": "public.app-category.developer-tools"
-    }
+      "category": "public.app-category.developer-tools",
+      "icon": "build/icon.png",
+      "target": "dmg",
+      "darkModeSupport": true,
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "quickNginx",
+      "icon": "build/icon.png",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "extraResources": [
+      {
+        "from": "build",
+        "to": "build",
+        "filter": ["*.png"]
+      }
+    ]
   },
   "dependencies": {
-    "electron-store": "^8.1.0"
+    "chalk": "^4.1.2",
+    "sudo-prompt": "^9.2.1"
   },
   "devDependencies": {
-    "electron": "^25.8.4",
-    "electron-builder": "^24.6.4"
+    "electron": "^31.0.0",
+    "electron-builder": "^24.9.1"
   }
 }

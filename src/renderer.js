@@ -76,21 +76,25 @@ function updateConfigList() {
         
         actionButton.onclick = async () => {
             try {
+                let result;
                 if (currentConfig === config) {
                     // 停止当前配置
-                    await ipcRenderer.invoke('nginx-command', 'stop');
-                    currentConfig = null;
+                    result = await ipcRenderer.invoke('nginx-command', 'stop');
                 } else {
                     // 如果有其他配置在运行，先停止
                     if (isRunning) {
                         await ipcRenderer.invoke('nginx-command', 'stop');
                     }
                     // 启动新配置
-                    await ipcRenderer.invoke('nginx-command', 'start', config);
-                    currentConfig = config;
+                    result = await ipcRenderer.invoke('nginx-command', 'start', config);
                 }
-                await checkStatus();
-                updateConfigList();
+                
+                if (result.success) {
+                    isRunning = result.isRunning;
+                    currentConfig = result.currentConfig;
+                    updateStatus();
+                    updateConfigList();
+                }
             } catch (error) {
                 console.error('操作失败:', error);
             }
@@ -105,9 +109,13 @@ function updateConfigList() {
 // 检查 Nginx 状态
 async function checkStatus() {
     try {
-        isRunning = await ipcRenderer.invoke('check-status');
-        updateStatus();
-        updateConfigList();
+        const result = await ipcRenderer.invoke('nginx-command', 'status');
+        if (result.success) {
+            isRunning = result.isRunning;
+            currentConfig = result.currentConfig;
+            updateStatus();
+            updateConfigList();
+        }
     } catch (error) {
         console.error('检查状态失败:', error);
     }
@@ -128,16 +136,17 @@ document.getElementById('reloadButton').onclick = async () => {
 document.getElementById('startButton').onclick = async () => {
     try {
         const command = isRunning ? 'stop' : 'start';
-        await ipcRenderer.invoke('nginx-command', command);
-        await checkStatus();
+        const result = await ipcRenderer.invoke('nginx-command', command);
+        if (result.success) {
+            isRunning = result.isRunning;
+            currentConfig = result.currentConfig;
+            updateStatus();
+            updateConfigList();
+        }
     } catch (error) {
         console.error('操作失败:', error);
     }
 };
-
-// 初始化
-loadNginxPaths();
-checkStatus();
 
 // 监听来自主进程的状态变化通知
 ipcRenderer.on('nginx-status-changed', async (event, { isRunning: newIsRunning, currentConfig: newConfig }) => {
@@ -146,6 +155,10 @@ ipcRenderer.on('nginx-status-changed', async (event, { isRunning: newIsRunning, 
     updateStatus();
     updateConfigList();
 });
+
+// 初始化
+loadNginxPaths();
+checkStatus();
 
 // 定期检查状态
 setInterval(checkStatus, 5000); 
